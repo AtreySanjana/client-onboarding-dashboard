@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Client Onboarding Dashboard</title>
+
+  <!-- Font -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+<div class="app">
+
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <h2>OnboardPro</h2>
+    <nav>
+      <a class="active">Dashboard</a>
+    </nav>
+  </aside>
+
+  <!-- Main -->
+  <main class="main">
+
+    <!-- Topbar -->
+    <div class="topbar">
+      <h1>Client Dashboard</h1>
+
+      <div class="controls">
+        <select id="clientSelect">
+          <option>WanderNest Travels</option>
+          <option>SoloSoul Adventures</option>
+          <option>Luxury Trails Co.</option>
+        </select>
+
+        <select id="stageFilter">
+          <option value="all">All Stages</option>
+          <option value="completed">Completed</option>
+          <option value="in-progress">In Progress</option>
+          <option value="pending">Pending</option>
+        </select>
+
+        <input type="date" />
+      </div>
+    </div>
+
+    <!-- Notification -->
+    <div id="notification" class="notification hidden"></div>
+
+    <!-- KPI -->
+    <section class="kpis">
+      <div class="card">
+        <p class="label">ROI</p>
+        <h2 id="roi"></h2>
+      </div>
+
+      <div class="card">
+        <p class="label">Progress</p>
+        <h2 id="progressText"></h2>
+        <div class="mini-bar">
+          <div id="progressBar"></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <p class="label">Time Saved</p>
+        <h2 id="time"></h2>
+      </div>
+
+      <div class="card">
+        <p class="label">Status</p>
+        <h2 id="status"></h2>
+        <span id="statusBadge" class="badge"></span>
+      </div>
+    </section>
+
+    <!-- Charts -->
+    <section class="charts">
+      <div class="panel">
+        <h3>ROI Trend</h3>
+        <canvas id="roiChart"></canvas>
+      </div>
+
+      <div class="panel">
+        <h3>Task Distribution</h3>
+        <canvas id="taskChart"></canvas>
+      </div>
+    </section>
+
+    <!-- Grid -->
+    <section class="grid">
+
+      <div class="panel">
+        <h3>Tasks</h3>
+        <ul id="taskList"></ul>
+      </div>
+
+      <div class="panel">
+        <h3>Timeline</h3>
+        <ul>
+          <li>Requirement Gathering ✅</li>
+          <li>Workflow Setup ✅</li>
+          <li>Integration 🔄</li>
+          <li>Testing ⏳</li>
+        </ul>
+      </div>
+
+      <div class="panel full">
+        <h3>Client Insight</h3>
+        <p id="scenario"></p>
+      </div>
+
+    </section>
+
+  </main>
+</div>
+
+<script>
+const clients = {
+  "WanderNest Travels": {
+    roi: "52%",
+    progress: 80,
+    time: "140 hrs",
+    status: "On Track",
+    badge: "Healthy",
+    badgeColor: "green",
+    overdue: false,
+    scenario: "Automation reduced manual itinerary creation significantly.",
+    roiTrend: [10, 20, 30, 40, 52],
+    tasks: [
+      { text: "Setup CRM", status: "completed" },
+      { text: "Build onboarding form", status: "completed" },
+      { text: "API integration", status: "in-progress" },
+      { text: "Testing", status: "pending" }
+    ]
+  },
+  "SoloSoul Adventures": {
+    roi: "35%",
+    progress: 60,
+    time: "60 hrs",
+    status: "At Risk",
+    badge: "Attention Needed",
+    badgeColor: "red",
+    overdue: true,
+    scenario: "Lead drop-offs due to slow onboarding.",
+    roiTrend: [5, 10, 15, 25, 35],
+    tasks: [
+      { text: "CRM Setup", status: "completed" },
+      { text: "Email automation", status: "in-progress" },
+      { text: "Follow-ups", status: "pending" }
+    ]
+  },
+  "Luxury Trails Co.": {
+    roi: "68%",
+    progress: 90,
+    time: "200 hrs",
+    status: "On Track",
+    badge: "High Performing",
+    badgeColor: "green",
+    overdue: false,
+    scenario: "Premium onboarding optimized with personalization.",
+    roiTrend: [20, 35, 50, 60, 68],
+    tasks: [
+      { text: "Client profiling", status: "completed" },
+      { text: "Preference mapping", status: "completed" },
+      { text: "Delivery system", status: "in-progress" }
+    ]
+  }
+};
+
+let roiChart, taskChart;
+
+function initCharts() {
+  const roiCtx = document.getElementById("roiChart").getContext("2d");
+  const taskCtx = document.getElementById("taskChart").getContext("2d");
+
+  roiChart = new Chart(roiCtx, {
+    type: "line",
+    data: {
+      labels: ["W1", "W2", "W3", "W4", "W5"],
+      datasets: [{
+        label: "ROI %",
+        data: [],
+        borderColor: "#4f46e5",
+        backgroundColor: "rgba(79,70,229,0.1)",
+        fill: true,
+        tension: 0.3
+      }]
+    }
+  });
+
+  taskChart = new Chart(taskCtx, {
+    type: "doughnut",
+    data: {
+      labels: ["Completed", "In Progress", "Pending"],
+      datasets: [{
+        data: [],
+        backgroundColor: ["#16a34a", "#f59e0b", "#ef4444"]
+      }]
+    }
+  });
+}
+
+function updateCharts(client) {
+  roiChart.data.datasets[0].data = client.roiTrend;
+  roiChart.update();
+
+  const counts = { completed: 0, "in-progress": 0, pending: 0 };
+  client.tasks.forEach(t => counts[t.status]++);
+
+  taskChart.data.datasets[0].data = [
+    counts.completed,
+    counts["in-progress"],
+    counts.pending
+  ];
+  taskChart.update();
+}
+
+function updateUI(name) {
+  const c = clients[name];
+
+  document.getElementById("roi").innerText = c.roi;
+  document.getElementById("progressText").innerText = c.progress + "%";
+  document.getElementById("progressBar").style.width = c.progress + "%";
+  document.getElementById("time").innerText = c.time;
+  document.getElementById("status").innerText = c.status;
+
+  const badge = document.getElementById("statusBadge");
+  badge.innerText = c.badge;
+  badge.className = "badge " + c.badgeColor;
+
+  document.getElementById("scenario").innerText = c.scenario;
+
+  const list = document.getElementById("taskList");
+  list.innerHTML = "";
+
+  c.tasks.forEach(task => {
+    const li = document.createElement("li");
+    li.innerHTML = `
+      <input type="checkbox" ${task.status === "completed" ? "checked" : ""}/>
+      <span class="${task.status}">${task.text}</span>
+    `;
+    list.appendChild(li);
+  });
+
+  if (c.overdue) {
+    const n = document.getElementById("notification");
+    n.innerText = "⚠️ Client overdue — action required";
+    n.classList.remove("hidden");
+  }
+
+  updateCharts(c);
+}
+
+document.getElementById("clientSelect")
+  .addEventListener("change", e => updateUI(e.target.value));
+
+initCharts();
+updateUI("WanderNest Travels");
+</script>
+
+</body>
+</html>

@@ -1,0 +1,125 @@
+:root {
+  --bg: #f8fafc;
+  --sidebar: #111827;
+  --card: #ffffff;
+  --border: #e5e7eb;
+
+  --primary: #4f46e5;
+  --success: #16a34a;
+  --warning: #f59e0b;
+  --danger: #ef4444;
+}
+
+body {
+  margin: 0;
+  font-family: 'Inter', sans-serif;
+  background: var(--bg);
+}
+
+.app {
+  display: flex;
+}
+
+/* Sidebar */
+.sidebar {
+  position: fixed;   /* KEY FIX */
+  top: 0;
+  left: 0;
+
+  width: 200px;
+  height: 100vh;
+
+  background: var(--sidebar);
+  color: white;
+  padding: 20px;
+
+  overflow-y: auto;  /* scroll inside sidebar if needed */
+}
+
+/* Main */
+.main {
+  margin-left: 230px;   /* same as sidebar width */
+  padding: 20px 80px;
+}
+
+/* Topbar */
+.topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.controls select,
+.controls input {
+  font-family: 'Inter';
+  padding: 8px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+}
+
+/* KPI */
+.kpis {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 15px;
+  margin: 20px 0;
+}
+
+.card {
+  background: var(--card);
+  padding: 20px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+}
+
+/* Charts */
+.charts {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 15px;
+}
+
+.panel {
+  background: var(--card);
+  padding: 20px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 15px;
+  margin-top: 15px;
+}
+
+.full {
+  grid-column: span 2;
+}
+
+/* Tasks */
+.completed {
+  text-decoration: line-through;
+  color: gray;
+}
+
+/* Badge */
+.green {
+  color: var(--success);
+}
+.red {
+  color: var(--danger);
+}
+
+/* Notification */
+.notification {
+  background: #fee2e2;
+  color: #991b1b;
+  padding: 10px;
+  border-radius: 8px;
+  margin: 10px 0;
+}
+
+.hidden {
+  display: none;
+}
